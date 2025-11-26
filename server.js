@@ -1,5 +1,7 @@
 import express from 'express';
-import sqlite3 from 'sqlite3';
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const sqlite3 = require("sqlite3").verbose();
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import path from 'path';
@@ -15,7 +17,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
@@ -977,41 +979,40 @@ app.get('/api/analytics/report/:userId/:period', (req, res) => {
                     ORDER BY count DESC
                     LIMIT 1`,
                         [userId], (err, mostActiveDay) => {
-                            const sql = `SELECT workout_date as date, COUNT(*) as count 
-                 FROM workout_sessions 
-                 WHERE user_id = ? AND strftime('%Y', workout_date) = ? 
-                 GROUP BY workout_date 
-                 ORDER BY workout_date`;
+                            if (err) return res.status(400).json({ error: err.message });
 
-                            db.all(sql, [userId, year], (err, rows) => {
-                                if (err) {
-                                    return res.status(400).json({ error: err.message });
+                            const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+                            res.json({
+                                message: 'success',
+                                data: {
+                                    period,
+                                    workout_stats: workoutStats || {},
+                                    exercise_breakdown: exerciseBreakdown || [],
+                                    most_active_day: mostActiveDay ? dayNames[mostActiveDay.day_of_week] : 'N/A'
                                 }
-                                res.json({
-                                    message: 'success',
-                                    data: rows
-                                });
                             });
                         });
+                });
+        });
+});
 
+// Serve static files from the dist directory (Vite build output)
+app.use(express.static(path.join(__dirname, 'dist')));
 
+// Catch-all route to serve index.html for client-side routing
+app.get(/(.*)/, (req, res) => {
+    // Don't serve index.html for API routes
+    if (req.path.startsWith('/api')) {
+        return res.status(404).json({ error: 'API endpoint not found' });
+    }
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
 
-                    // Serve static files from the dist directory (Vite build output)
-                    app.use(express.static(path.join(__dirname, 'dist')));
+// Start Server
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 
-                    // Catch-all route to serve index.html for client-side routing
-                    app.get('*', (req, res) => {
-                        // Don't serve index.html for API routes
-                        if (req.path.startsWith('/api')) {
-                            return res.status(404).json({ error: 'API endpoint not found' });
-                        }
-                        res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-                    });
-
-                    // Start Server
-                    app.listen(PORT, () => {
-                        console.log(`Server running on port ${PORT}`);
-
-                        // Initialize meal reminder scheduler
-                        initializeScheduler();
-                    });
+    // Initialize meal reminder scheduler
+    initializeScheduler();
+});
