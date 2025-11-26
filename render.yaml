@@ -3,7 +3,7 @@ services:
   - type: web
     name: fit2fit-gym-api
     env: node
-    buildCommand: npm install
+    buildCommand: npm run render-build
     startCommand: node server.js
     envVars:
       - key: NODE_ENV
