@@ -16,7 +16,7 @@ const WorkoutHeatmap = ({ userId }) => {
 
     const fetchHeatmapData = async () => {
         try {
-            const response = await axios.get(`http://localhost:3000/api/analytics/heatmap/${userId}/${year}`);
+            const response = await axios.get(`/api/analytics/heatmap/${userId}/${year}`);
             setHeatmapData(response.data.data);
         } catch (error) {
             console.error('Error fetching heatmap data:', error);

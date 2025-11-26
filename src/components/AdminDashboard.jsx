@@ -13,8 +13,8 @@ const AdminDashboard = () => {
 
     const fetchData = async () => {
         try {
-            const membersRes = await axios.get('http://localhost:3000/api/members');
-            const transactionsRes = await axios.get('http://localhost:3000/api/transactions');
+            const membersRes = await axios.get('/api/members');
+            const transactionsRes = await axios.get('/api/transactions');
             setMembers(membersRes.data.data);
             setTransactions(transactionsRes.data.data);
             setLoading(false);

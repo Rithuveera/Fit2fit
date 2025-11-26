@@ -25,7 +25,7 @@ const WorkoutLogger = () => {
 
     const fetchExercises = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/api/analytics/exercises');
+            const response = await axios.get('/api/analytics/exercises');
             setExercises(response.data.data);
         } catch (error) {
             console.error('Error fetching exercises:', error);
@@ -79,7 +79,7 @@ const WorkoutLogger = () => {
         };
 
         try {
-            await axios.post('http://localhost:3000/api/analytics/workout', workout);
+            await axios.post('/api/analytics/workout', workout);
             setMessage({ type: 'success', text: '✅ Workout logged successfully!' });
         } catch (error) {
             console.error('API error, saving to localStorage:', error);

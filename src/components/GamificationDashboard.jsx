@@ -31,9 +31,9 @@ const GamificationDashboard = () => {
     const loadUserData = async (uid) => {
         try {
             const [profileRes, achievementsRes, leaderboardRes] = await Promise.all([
-                axios.get(`http://localhost:3000/api/profile/${uid}`),
-                axios.get(`http://localhost:3000/api/achievements/${uid}`),
-                axios.get(`http://localhost:3000/api/leaderboard`)
+                axios.get(`/api/profile/${uid}`),
+                axios.get(`/api/achievements/${uid}`),
+                axios.get(`/api/leaderboard`)
             ]);
 
             setUserProfile(profileRes.data.data);
@@ -51,7 +51,7 @@ const GamificationDashboard = () => {
         }
 
         try {
-            const response = await axios.post('http://localhost:3000/api/checkin', {
+            const response = await axios.post('/api/checkin', {
                 user_id: userId,
                 name: userName,
                 workout_type: 'general'

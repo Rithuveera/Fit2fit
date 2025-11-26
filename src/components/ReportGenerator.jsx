@@ -16,7 +16,7 @@ const ReportGenerator = ({ userId }) => {
     const fetchReport = async () => {
         setLoading(true);
         try {
-            const response = await axios.get(`http://localhost:3000/api/analytics/report/${userId}/${period}`);
+            const response = await axios.get(`/api/analytics/report/${userId}/${period}`);
             setReport(response.data.data);
         } catch (error) {
             console.error('Error fetching report:', error);
@@ -47,10 +47,10 @@ const ReportGenerator = ({ userId }) => {
                 <button
                     onClick={() => setPeriod('month')}
                     className={`px-8 py-3 rounded-lg font-semibold transition ${period === 'month'
-                            ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg'
-                            : isDark
-                                ? 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                                : 'bg-white text-gray-700 hover:bg-gray-100'
+                        ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg'
+                        : isDark
+                            ? 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                            : 'bg-white text-gray-700 hover:bg-gray-100'
                         }`}
                 >
                     📅 Monthly Report
@@ -58,10 +58,10 @@ const ReportGenerator = ({ userId }) => {
                 <button
                     onClick={() => setPeriod('year')}
                     className={`px-8 py-3 rounded-lg font-semibold transition ${period === 'year'
-                            ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg'
-                            : isDark
-                                ? 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                                : 'bg-white text-gray-700 hover:bg-gray-100'
+                        ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg'
+                        : isDark
+                            ? 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                            : 'bg-white text-gray-700 hover:bg-gray-100'
                         }`}
                 >
                     📆 Yearly Report

@@ -20,7 +20,7 @@ const GoalTracker = ({ userId, goals, onGoalsUpdated, stats }) => {
         setLoading(true);
 
         try {
-            await axios.post('http://localhost:3000/api/analytics/goal', {
+            await axios.post('/api/analytics/goal', {
                 user_id: userId,
                 ...formData
             });
@@ -43,7 +43,7 @@ const GoalTracker = ({ userId, goals, onGoalsUpdated, stats }) => {
 
     const handleUpdateGoal = async (goalId, updates) => {
         try {
-            await axios.put(`http://localhost:3000/api/analytics/goal/${goalId}`, updates);
+            await axios.put(`/api/analytics/goal/${goalId}`, updates);
             onGoalsUpdated();
         } catch (error) {
             console.error('Error updating goal:', error);
@@ -53,7 +53,7 @@ const GoalTracker = ({ userId, goals, onGoalsUpdated, stats }) => {
     const handleDeleteGoal = async (goalId) => {
         if (window.confirm('Are you sure you want to delete this goal?')) {
             try {
-                await axios.delete(`http://localhost:3000/api/analytics/goal/${goalId}`);
+                await axios.delete(`/api/analytics/goal/${goalId}`);
                 onGoalsUpdated();
             } catch (error) {
                 console.error('Error deleting goal:', error);

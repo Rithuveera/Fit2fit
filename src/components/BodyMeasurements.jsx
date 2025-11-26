@@ -20,7 +20,7 @@ const BodyMeasurements = ({ userId, measurements, onMeasurementAdded }) => {
         setLoading(true);
 
         try {
-            await axios.post('http://localhost:3000/api/analytics/measurement', {
+            await axios.post('/api/analytics/measurement', {
                 user_id: userId,
                 weight: formData.weight ? parseFloat(formData.weight) : null,
                 body_fat_percentage: formData.body_fat_percentage ? parseFloat(formData.body_fat_percentage) : null,

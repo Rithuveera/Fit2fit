@@ -22,7 +22,7 @@ const DietReminderSubscription = ({ classType }) => {
 
     const checkSubscriptionStatus = async (userEmail) => {
         try {
-            const response = await axios.get(`http://localhost:3000/api/reminder-status/${userEmail}/${classType}`);
+            const response = await axios.get(`/api/reminder-status/${userEmail}/${classType}`);
             if (response.data.data.subscribed) {
                 setIsSubscribed(true);
                 setName(response.data.data.subscription.name || '');
@@ -49,7 +49,7 @@ const DietReminderSubscription = ({ classType }) => {
         setMessage({ type: '', text: '' });
 
         try {
-            const response = await axios.post('http://localhost:3000/api/subscribe-reminders', {
+            const response = await axios.post('/api/subscribe-reminders', {
                 email,
                 name,
                 class_type: classType,
@@ -85,7 +85,7 @@ const DietReminderSubscription = ({ classType }) => {
         setMessage({ type: '', text: '' });
 
         try {
-            const response = await axios.post('http://localhost:3000/api/unsubscribe-reminders', {
+            const response = await axios.post('/api/unsubscribe-reminders', {
                 email,
                 class_type: classType
             });

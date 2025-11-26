@@ -26,8 +26,8 @@ const AnalyticsDashboard = () => {
         setLoading(true);
         try {
             const [statsRes, workoutsRes] = await Promise.all([
-                axios.get(`http://localhost:3000/api/analytics/stats/${userEmail}`),
-                axios.get(`http://localhost:3000/api/analytics/workouts/${userEmail}`)
+                axios.get(`/api/analytics/stats/${userEmail}`),
+                axios.get(`/api/analytics/workouts/${userEmail}`)
             ]);
 
             setStats(statsRes.data.data);
@@ -211,8 +211,8 @@ const AnalyticsDashboard = () => {
                                                     <td className="py-3 px-4 text-gray-700 dark:text-gray-300">{workout.calories} kcal</td>
                                                     <td className="py-3 px-4">
                                                         <span className={`px-2 py-1 rounded text-xs font-semibold ${workout.intensity === 'intense' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
-                                                                workout.intensity === 'moderate' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
-                                                                    'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                            workout.intensity === 'moderate' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                                                                'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                                                             }`}>
                                                             {workout.intensity}
                                                         </span>

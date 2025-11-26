@@ -19,7 +19,7 @@ const JoinModal = ({ onClose }) => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await axios.post('http://localhost:3000/api/join', formData);
+            await axios.post('/api/join', formData);
             setIsSubmitting(false);
             setIsSuccess(true);
         } catch (error) {

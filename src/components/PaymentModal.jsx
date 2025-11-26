@@ -20,7 +20,7 @@ const PaymentModal = ({ plan, onClose }) => {
         setIsProcessing(true);
 
         try {
-            await axios.post('http://localhost:3000/api/pay', {
+            await axios.post('/api/pay', {
                 member_name: formData.cardName,
                 plan: plan.name,
                 amount: plan.price,
