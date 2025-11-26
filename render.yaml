@@ -3,6 +3,7 @@ services:
   - type: web
     name: fit2fit-gym-api
     env: node
+    plan: free
     buildCommand: npm run render-build
     startCommand: node server.js
     envVars:
