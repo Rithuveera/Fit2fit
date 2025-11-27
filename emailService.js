@@ -150,7 +150,7 @@ const createMealReminderEmail = (userName, mealName, mealDetails, mealTime, clas
             </div>
             
             <p style="text-align: center;">
-                <a href="http://localhost:5173/" class="cta-button">View Full Diet Plan</a>
+                <a href="https://fit2fit-gym-api.onrender.com/" class="cta-button">View Full Diet Plan</a>
             </p>
         </div>
         
@@ -180,7 +180,7 @@ Class: ${className} Diet Plan
 
 Quick Tip: Stay consistent with your meal timing for best results. Proper nutrition is 70% of your fitness journey!
 
-Visit http://localhost:5173/ to view your full diet plan.
+Visit https://fit2fit-gym-api.onrender.com/ to view your full diet plan.
 
 ---
 Fit2Fit Gym - Building Better Bodies, One Meal at a Time

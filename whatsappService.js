@@ -46,7 +46,7 @@ It's time for your *${mealName}*!
 
 💡 *Quick Tip:* Stay consistent with your meal timing for best results. Proper nutrition is 70% of your fitness journey!
 
-Visit your diet plan: http://localhost:5173/
+Visit your diet plan: https://fit2fit-gym-api.onrender.com/
 
 ---
 Fit2Fit Gym - Building Better Bodies, One Meal at a Time 💪`;
