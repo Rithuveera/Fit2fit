@@ -3,12 +3,12 @@ import { motion } from 'framer-motion';
 import DietReminderSubscription from './DietReminderSubscription';
 
 const MealReminders = () => {
-    const [selectedClass, setSelectedClass] = useState('High Intensity Interval Training');
+    const [selectedClass, setSelectedClass] = useState('HIIT');
 
     const classes = [
-        'High Intensity Interval Training',
-        'Yoga Flow',
-        'Strength & Conditioning'
+        { display: 'HIIT', value: 'HIIT' },
+        { display: 'Yoga Flow', value: 'Yoga' },
+        { display: 'Strength & Conditioning', value: 'Strength' }
     ];
 
     return (
@@ -64,16 +64,16 @@ const MealReminders = () => {
                                 <span>🏋️</span> Select Your Class
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                {classes.map((className) => (
+                                {classes.map((classItem) => (
                                     <button
-                                        key={className}
-                                        onClick={() => setSelectedClass(className)}
-                                        className={`p-4 rounded-xl font-semibold transition-all duration-300 ${selectedClass === className
+                                        key={classItem.value}
+                                        onClick={() => setSelectedClass(classItem.value)}
+                                        className={`p-4 rounded-xl font-semibold transition-all duration-300 ${selectedClass === classItem.value
                                             ? 'bg-neon-green text-black shadow-lg scale-105'
                                             : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                                             }`}
                                     >
-                                        {className === 'High Intensity Interval Training' ? 'HIIT' : className}
+                                        {classItem.display}
                                     </button>
                                 ))}
                             </div>
