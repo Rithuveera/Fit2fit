@@ -5,8 +5,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import db from './db.js';
 import { initializeScheduler } from './reminderScheduler.js';
-import { sendSubscriptionConfirmation } from './emailService.js';
-import { sendSubscriptionConfirmationWhatsApp } from './whatsappService.js';
+import { sendSubscriptionConfirmation, sendMealReminder } from './emailService.js';
+import { sendSubscriptionConfirmationWhatsApp, sendMealReminderWhatsApp } from './whatsappService.js';
 
 dotenv.config();
 
@@ -262,6 +262,72 @@ app.get('/api/reminder-status/:email/:classType', async (req, res) => {
         res.json({ message: 'success', data: { subscribed: result.rows.length > 0, subscription: result.rows[0] } });
     } catch (err) {
         res.status(400).json({ error: err.message });
+    }
+});
+
+// Test endpoint to send a meal reminder immediately
+app.post('/api/test-meal-reminder', async (req, res) => {
+    const { email, class_type } = req.body;
+
+    if (!email || !class_type) {
+        return res.status(400).json({ error: 'Email and class_type are required' });
+    }
+
+    try {
+        // Get subscriber info
+        const result = await db.query(
+            'SELECT * FROM diet_reminders WHERE email = $1 AND class_type = $2 AND active = TRUE',
+            [email, class_type]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'No active subscription found for this email and class type' });
+        }
+
+        const subscriber = result.rows[0];
+
+        // Sample meal data for testing
+        const testMeals = {
+            'HIIT': { name: 'Breakfast', meal: 'Poha with peanuts, curry leaves & lemon', time: '7:00 AM' },
+            'Yoga': { name: 'Breakfast', meal: 'Idli with sambar & coconut chutney', time: '7:30 AM' },
+            'Strength': { name: 'Breakfast', meal: 'Egg bhurji (4 eggs) with multigrain roti', time: '7:00 AM' }
+        };
+
+        const testMeal = testMeals[class_type] || testMeals['HIIT'];
+
+        // Send email reminder
+        await sendMealReminder(
+            subscriber.email,
+            subscriber.name || 'Fitness Enthusiast',
+            testMeal.name,
+            testMeal.meal,
+            testMeal.time,
+            class_type
+        );
+
+        // Send WhatsApp reminder if enabled
+        if (subscriber.whatsapp_enabled && subscriber.phone_number) {
+            await sendMealReminderWhatsApp(
+                subscriber.phone_number,
+                subscriber.name || 'Fitness Enthusiast',
+                testMeal.name,
+                testMeal.meal,
+                testMeal.time,
+                class_type
+            );
+        }
+
+        res.json({
+            message: 'success',
+            data: {
+                email_sent: true,
+                whatsapp_sent: subscriber.whatsapp_enabled && !!subscriber.phone_number,
+                meal: testMeal
+            }
+        });
+    } catch (err) {
+        console.error('Test reminder error:', err);
+        res.status(500).json({ error: err.message });
     }
 });
 
