@@ -265,6 +265,21 @@ app.get('/api/reminder-status/:email/:classType', async (req, res) => {
     }
 });
 
+app.post('/api/unsubscribe-reminders', async (req, res) => {
+    const { email, class_type } = req.body;
+    if (!email || !class_type) return res.status(400).json({ error: 'Email and class type required' });
+
+    try {
+        await db.query(
+            'UPDATE diet_reminders SET active = FALSE WHERE email = $1 AND class_type = $2',
+            [email, class_type]
+        );
+        res.json({ message: 'success', data: { unsubscribed: true } });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
 // Test endpoint to send a meal reminder immediately
 app.post('/api/test-meal-reminder', async (req, res) => {
     const { email, class_type } = req.body;
