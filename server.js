@@ -311,7 +311,7 @@ app.post('/api/test-meal-reminder', async (req, res) => {
         const testMeal = testMeals[class_type] || testMeals['HIIT'];
 
         // Send email reminder
-        await sendMealReminder(
+        const emailResult = await sendMealReminder(
             subscriber.email,
             subscriber.name || 'Fitness Enthusiast',
             testMeal.name,
@@ -321,8 +321,9 @@ app.post('/api/test-meal-reminder', async (req, res) => {
         );
 
         // Send WhatsApp reminder if enabled
+        let whatsappResult = { success: false, skipped: true };
         if (subscriber.whatsapp_enabled && subscriber.phone_number) {
-            await sendMealReminderWhatsApp(
+            whatsappResult = await sendMealReminderWhatsApp(
                 subscriber.phone_number,
                 subscriber.name || 'Fitness Enthusiast',
                 testMeal.name,
@@ -333,10 +334,12 @@ app.post('/api/test-meal-reminder', async (req, res) => {
         }
 
         res.json({
-            message: 'success',
+            message: (emailResult.success || whatsappResult.success) ? 'success' : 'partial_failure',
             data: {
-                email_sent: true,
-                whatsapp_sent: subscriber.whatsapp_enabled && !!subscriber.phone_number,
+                email_sent: emailResult.success,
+                email_error: emailResult.error,
+                whatsapp_sent: whatsappResult.success,
+                whatsapp_error: whatsappResult.error,
                 meal: testMeal
             }
         });
