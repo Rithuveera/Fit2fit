@@ -1,192 +1,113 @@
 import cron from 'node-cron';
-import sqlite3 from 'sqlite3';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import { sendMealReminder } from './emailService.js';
 import { sendMealReminderWhatsApp } from './whatsappService.js';
+import db from './db.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Database connection
-const dbPath = path.resolve(__dirname, 'gym.db');
-const db = new sqlite3.Database(dbPath);
-
-// Diet plans data (matching Classes.jsx)
+// Diet Plan Data (Hardcoded for now, could be in DB)
 const dietPlans = {
-    'HIIT': [
-        { name: 'Breakfast', meal: 'Poha with peanuts, curry leaves & lemon OR Moong dal chilla with mint chutney', time: '7:00 AM' },
-        { name: 'Mid-Morning', meal: 'Curd (dahi) with roasted chana & fruits', time: '10:00 AM' },
-        { name: 'Lunch', meal: 'Grilled chicken/paneer, brown rice, dal, sabzi & salad', time: '1:00 PM' },
-        { name: 'Pre-Workout', meal: 'Banana with dates OR upma (small portion)', time: '4:30 PM' },
-        { name: 'Post-Workout', meal: 'Protein shake with banana', time: '6:30 PM' },
-        { name: 'Dinner', meal: 'Grilled fish/chicken tikka, roti, dal & sautéed vegetables', time: '8:30 PM' }
-    ],
-    'Yoga': [
-        { name: 'Breakfast', meal: 'Idli with sambar & coconut chutney OR oats upma with vegetables', time: '7:30 AM' },
-        { name: 'Mid-Morning', meal: 'Handful of soaked almonds, walnuts & green tea', time: '10:30 AM' },
-        { name: 'Lunch', meal: 'Brown rice, dal, paneer/tofu curry, sabzi & raita', time: '1:00 PM' },
-        { name: 'Afternoon', meal: 'Sprouts chaat OR roasted makhana', time: '4:00 PM' },
-        { name: 'Post-Yoga', meal: 'Fresh fruit bowl with chia/flax seeds', time: '7:00 PM' },
-        { name: 'Dinner', meal: 'Moong dal khichdi with ghee, curd & papad', time: '8:30 PM' }
-    ],
-    'Strength': [
-        { name: 'Breakfast', meal: 'Egg bhurji (4 eggs) with multigrain roti & avocado/paneer', time: '7:00 AM' },
-        { name: 'Mid-Morning', meal: 'Whey protein shake with banana & soaked almonds', time: '10:00 AM' },
-        { name: 'Lunch', meal: 'Chicken/mutton curry, brown rice, dal & mixed vegetable sabzi', time: '12:30 PM' },
-        { name: 'Pre-Workout', meal: 'Peanut butter chikki with banana OR sweet potato chaat', time: '3:30 PM' },
-        { name: 'Post-Workout', meal: 'Grilled chicken tikka/paneer with brown rice & stir-fried veggies', time: '6:00 PM' },
-        { name: 'Dinner', meal: 'Fish curry/chicken keema, quinoa/roti, dal & cucumber raita', time: '8:30 PM' }
-    ]
-};
-
-// Function to get active subscribers
-const getActiveSubscribers = () => {
-    return new Promise((resolve, reject) => {
-        db.all(
-            'SELECT * FROM diet_reminders WHERE active = 1',
-            [],
-            (err, rows) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(rows);
-                }
-            }
-        );
-    });
-};
-
-// Function to send reminders for a specific meal time
-const sendMealReminders = async (targetTime) => {
-    try {
-        const subscribers = await getActiveSubscribers();
-
-        if (subscribers.length === 0) {
-            console.log(`⏰ ${targetTime} - No active subscribers`);
-            return;
-        }
-
-        console.log(`⏰ ${targetTime} - Sending reminders to ${subscribers.length} subscriber(s)`);
-
-        for (const subscriber of subscribers) {
-            const classType = subscriber.class_type;
-            const meals = dietPlans[classType];
-
-            if (!meals) {
-                console.log(`⚠️ Unknown class type: ${classType}`);
-                continue;
-            }
-
-            // Find meal matching the target time
-            const meal = meals.find(m => m.time === targetTime);
-
-            if (meal) {
-                // Send email reminder
-                await sendMealReminder(
-                    subscriber.email,
-                    subscriber.name || 'Fitness Enthusiast',
-                    meal.name,
-                    meal.meal,
-                    meal.time,
-                    classType
-                );
-
-                // Send WhatsApp reminder if enabled and phone number exists
-                if (subscriber.whatsapp_enabled && subscriber.phone_number) {
-                    await sendMealReminderWhatsApp(
-                        subscriber.phone_number,
-                        subscriber.name || 'Fitness Enthusiast',
-                        meal.name,
-                        meal.meal,
-                        meal.time,
-                        classType
-                    );
-                }
-            }
-        }
-    } catch (error) {
-        console.error(`❌ Error sending reminders for ${targetTime}:`, error);
+    'HIIT': {
+        'Breakfast': { meal: 'Poha with peanuts, curry leaves & lemon', time: '7:00 AM' },
+        'Mid-Morning': { meal: 'Fruit salad with flax seeds', time: '10:00 AM' },
+        'Lunch': { meal: 'Brown rice, dal, mixed vegetable sabzi & curd', time: '1:00 PM' },
+        'Pre-Workout': { meal: 'Banana & peanut butter toast', time: '4:30 PM' },
+        'Post-Workout': { meal: 'Protein shake or boiled eggs', time: '6:30 PM' },
+        'Dinner': { meal: 'Grilled chicken/paneer salad with soup', time: '8:30 PM' }
+    },
+    'Yoga': {
+        'Breakfast': { meal: 'Idli with sambar & coconut chutney', time: '7:30 AM' },
+        'Mid-Morning': { meal: 'Green tea & roasted makhanas', time: '10:30 AM' },
+        'Lunch': { meal: 'Quinoa khichdi with cucumber raita', time: '1:00 PM' },
+        'Afternoon': { meal: 'Sprouts salad', time: '4:00 PM' },
+        'Post-Yoga': { meal: 'Warm turmeric milk with almonds', time: '7:00 PM' },
+        'Dinner': { meal: 'Moong dal soup with sautéed veggies', time: '8:30 PM' }
+    },
+    'Strength': {
+        'Breakfast': { meal: 'Egg bhurji (4 eggs) with multigrain roti', time: '7:00 AM' },
+        'Mid-Morning': { meal: 'Greek yogurt with berries', time: '10:00 AM' },
+        'Lunch': { meal: 'Chicken breast/Tofu curry with sweet potato', time: '12:30 PM' },
+        'Pre-Workout': { meal: 'Oatmeal with whey protein', time: '3:30 PM' },
+        'Post-Workout': { meal: 'Whey protein isolate with water', time: '6:00 PM' },
+        'Dinner': { meal: 'Grilled fish/paneer with steamed broccoli', time: '8:30 PM' }
     }
 };
 
-// Schedule cron jobs for each meal time
-export const initializeScheduler = () => {
-    console.log('🚀 Initializing meal reminder scheduler...');
+// Function to check and send reminders
+async function checkAndSendReminders(classType, mealName, mealDetails) {
+    console.log(`Checking reminders for ${classType} - ${mealName}`);
 
-    const timezone = "Asia/Kolkata";
-    const cronOptions = {
-        scheduled: true,
-        timezone: timezone
-    };
+    try {
+        // Fetch active subscribers for this class type
+        const result = await db.query(
+            'SELECT * FROM diet_reminders WHERE class_type = $1 AND active = 1',
+            [classType]
+        );
 
-    // Breakfast - 7:00 AM (HIIT, Strength)
-    cron.schedule('0 7 * * *', () => {
-        sendMealReminders('7:00 AM');
-    }, cronOptions);
+        const subscribers = result.rows;
 
-    // Breakfast - 7:30 AM (Yoga)
-    cron.schedule('30 7 * * *', () => {
-        sendMealReminders('7:30 AM');
-    }, cronOptions);
+        if (subscribers.length === 0) {
+            console.log(`No active subscribers for ${classType}`);
+            return;
+        }
 
-    // Mid-Morning - 10:00 AM (HIIT, Strength)
-    cron.schedule('0 10 * * *', () => {
-        sendMealReminders('10:00 AM');
-    }, cronOptions);
+        console.log(`Found ${subscribers.length} subscribers for ${classType}`);
 
-    // Mid-Morning - 10:30 AM (Yoga)
-    cron.schedule('30 10 * * *', () => {
-        sendMealReminders('10:30 AM');
-    }, cronOptions);
+        for (const subscriber of subscribers) {
+            // Send Email
+            try {
+                await sendMealReminder(subscriber.email, subscriber.name, mealName, mealDetails.meal, mealDetails.time, classType);
+                console.log(`Email sent to ${subscriber.email}`);
+            } catch (emailError) {
+                console.error(`Failed to send email to ${subscriber.email}:`, emailError);
+            }
 
-    // Lunch - 12:30 PM (Strength)
-    cron.schedule('30 12 * * *', () => {
-        sendMealReminders('12:30 PM');
-    }, cronOptions);
+            // Send WhatsApp (if enabled)
+            if (subscriber.whatsapp_enabled && subscriber.phone_number) {
+                try {
+                    await sendMealReminderWhatsApp(subscriber.phone_number, subscriber.name, mealName, mealDetails.meal, mealDetails.time, classType);
+                    console.log(`WhatsApp sent to ${subscriber.phone_number}`);
+                } catch (waError) {
+                    console.error(`Failed to send WhatsApp to ${subscriber.phone_number}:`, waError);
+                }
+            }
+        }
+    } catch (err) {
+        console.error('Error fetching subscribers:', err);
+    }
+}
 
-    // Lunch - 1:00 PM (HIIT, Yoga)
-    cron.schedule('0 13 * * *', () => {
-        sendMealReminders('1:00 PM');
-    }, cronOptions);
+// Initialize Scheduler
+export function initializeScheduler() {
+    console.log('Initializing Meal Reminder Scheduler (IST Timezone)...');
 
-    // Pre-Workout - 3:30 PM (Strength)
-    cron.schedule('30 15 * * *', () => {
-        sendMealReminders('3:30 PM');
-    }, cronOptions);
+    // Schedule jobs for each class type and meal
+    // Note: Cron times need to be converted to 24-hour format for the scheduler
+    // Using explicit timezone "Asia/Kolkata" for all schedules
 
-    // Afternoon - 4:00 PM (Yoga)
-    cron.schedule('0 16 * * *', () => {
-        sendMealReminders('4:00 PM');
-    }, cronOptions);
+    // HIIT Schedule
+    cron.schedule('0 7 * * *', () => checkAndSendReminders('HIIT', 'Breakfast', dietPlans['HIIT']['Breakfast']), { timezone: "Asia/Kolkata" });
+    cron.schedule('0 10 * * *', () => checkAndSendReminders('HIIT', 'Mid-Morning', dietPlans['HIIT']['Mid-Morning']), { timezone: "Asia/Kolkata" });
+    cron.schedule('0 13 * * *', () => checkAndSendReminders('HIIT', 'Lunch', dietPlans['HIIT']['Lunch']), { timezone: "Asia/Kolkata" });
+    cron.schedule('30 16 * * *', () => checkAndSendReminders('HIIT', 'Pre-Workout', dietPlans['HIIT']['Pre-Workout']), { timezone: "Asia/Kolkata" });
+    cron.schedule('30 18 * * *', () => checkAndSendReminders('HIIT', 'Post-Workout', dietPlans['HIIT']['Post-Workout']), { timezone: "Asia/Kolkata" });
+    cron.schedule('30 20 * * *', () => checkAndSendReminders('HIIT', 'Dinner', dietPlans['HIIT']['Dinner']), { timezone: "Asia/Kolkata" });
 
-    // Pre-Workout - 4:30 PM (HIIT)
-    cron.schedule('30 16 * * *', () => {
-        sendMealReminders('4:30 PM');
-    }, cronOptions);
+    // Yoga Schedule
+    cron.schedule('30 7 * * *', () => checkAndSendReminders('Yoga', 'Breakfast', dietPlans['Yoga']['Breakfast']), { timezone: "Asia/Kolkata" });
+    cron.schedule('30 10 * * *', () => checkAndSendReminders('Yoga', 'Mid-Morning', dietPlans['Yoga']['Mid-Morning']), { timezone: "Asia/Kolkata" });
+    cron.schedule('0 13 * * *', () => checkAndSendReminders('Yoga', 'Lunch', dietPlans['Yoga']['Lunch']), { timezone: "Asia/Kolkata" });
+    cron.schedule('0 16 * * *', () => checkAndSendReminders('Yoga', 'Afternoon', dietPlans['Yoga']['Afternoon']), { timezone: "Asia/Kolkata" });
+    cron.schedule('0 19 * * *', () => checkAndSendReminders('Yoga', 'Post-Yoga', dietPlans['Yoga']['Post-Yoga']), { timezone: "Asia/Kolkata" });
+    cron.schedule('30 20 * * *', () => checkAndSendReminders('Yoga', 'Dinner', dietPlans['Yoga']['Dinner']), { timezone: "Asia/Kolkata" });
 
-    // Post-Workout - 6:00 PM (Strength)
-    cron.schedule('0 18 * * *', () => {
-        sendMealReminders('6:00 PM');
-    }, cronOptions);
+    // Strength Schedule
+    cron.schedule('0 7 * * *', () => checkAndSendReminders('Strength', 'Breakfast', dietPlans['Strength']['Breakfast']), { timezone: "Asia/Kolkata" });
+    cron.schedule('0 10 * * *', () => checkAndSendReminders('Strength', 'Mid-Morning', dietPlans['Strength']['Mid-Morning']), { timezone: "Asia/Kolkata" });
+    cron.schedule('30 12 * * *', () => checkAndSendReminders('Strength', 'Lunch', dietPlans['Strength']['Lunch']), { timezone: "Asia/Kolkata" });
+    cron.schedule('30 15 * * *', () => checkAndSendReminders('Strength', 'Pre-Workout', dietPlans['Strength']['Pre-Workout']), { timezone: "Asia/Kolkata" });
+    cron.schedule('0 18 * * *', () => checkAndSendReminders('Strength', 'Post-Workout', dietPlans['Strength']['Post-Workout']), { timezone: "Asia/Kolkata" });
+    cron.schedule('30 20 * * *', () => checkAndSendReminders('Strength', 'Dinner', dietPlans['Strength']['Dinner']), { timezone: "Asia/Kolkata" });
 
-    // Post-Workout - 6:30 PM (HIIT)
-    cron.schedule('30 18 * * *', () => {
-        sendMealReminders('6:30 PM');
-    }, cronOptions);
-
-    // Post-Yoga - 7:00 PM (Yoga)
-    cron.schedule('0 19 * * *', () => {
-        sendMealReminders('7:00 PM');
-    }, cronOptions);
-
-    // Dinner - 8:30 PM (All classes)
-    cron.schedule('30 20 * * *', () => {
-        sendMealReminders('8:30 PM');
-    }, cronOptions);
-
-    console.log(`✅ Meal reminder scheduler initialized successfully! (Timezone: ${timezone})`);
-    console.log('📅 Scheduled reminders for all meal times');
-};
+    console.log('✅ All meal reminders scheduled successfully.');
+}
 
 export default initializeScheduler;
