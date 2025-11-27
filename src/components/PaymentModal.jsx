@@ -20,11 +20,13 @@ const PaymentModal = ({ plan, onClose }) => {
         setIsProcessing(true);
 
         try {
+            // Extract numeric amount from price string (e.g., "$29" -> 29)
+            const numericAmount = parseFloat(plan.price.replace('$', ''));
+
             await axios.post('/api/pay', {
-                member_name: formData.cardName,
-                plan: plan.name,
-                amount: plan.price,
-                card_last4: formData.cardNumber.slice(-4)
+                member_id: 1, // Default member ID for demo purposes
+                amount: numericAmount,
+                type: `${plan.name} Membership - Card ending in ${formData.cardNumber.slice(-4)}`
             });
 
             setIsProcessing(false);
