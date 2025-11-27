@@ -114,72 +114,78 @@ const sendMealReminders = async (targetTime) => {
 export const initializeScheduler = () => {
     console.log('🚀 Initializing meal reminder scheduler...');
 
+    const timezone = "Asia/Kolkata";
+    const cronOptions = {
+        scheduled: true,
+        timezone: timezone
+    };
+
     // Breakfast - 7:00 AM (HIIT, Strength)
     cron.schedule('0 7 * * *', () => {
         sendMealReminders('7:00 AM');
-    });
+    }, cronOptions);
 
     // Breakfast - 7:30 AM (Yoga)
     cron.schedule('30 7 * * *', () => {
         sendMealReminders('7:30 AM');
-    });
+    }, cronOptions);
 
     // Mid-Morning - 10:00 AM (HIIT, Strength)
     cron.schedule('0 10 * * *', () => {
         sendMealReminders('10:00 AM');
-    });
+    }, cronOptions);
 
     // Mid-Morning - 10:30 AM (Yoga)
     cron.schedule('30 10 * * *', () => {
         sendMealReminders('10:30 AM');
-    });
+    }, cronOptions);
 
     // Lunch - 12:30 PM (Strength)
     cron.schedule('30 12 * * *', () => {
         sendMealReminders('12:30 PM');
-    });
+    }, cronOptions);
 
     // Lunch - 1:00 PM (HIIT, Yoga)
     cron.schedule('0 13 * * *', () => {
         sendMealReminders('1:00 PM');
-    });
+    }, cronOptions);
 
     // Pre-Workout - 3:30 PM (Strength)
     cron.schedule('30 15 * * *', () => {
         sendMealReminders('3:30 PM');
-    });
+    }, cronOptions);
 
     // Afternoon - 4:00 PM (Yoga)
     cron.schedule('0 16 * * *', () => {
         sendMealReminders('4:00 PM');
-    });
+    }, cronOptions);
 
     // Pre-Workout - 4:30 PM (HIIT)
     cron.schedule('30 16 * * *', () => {
         sendMealReminders('4:30 PM');
-    });
+    }, cronOptions);
 
     // Post-Workout - 6:00 PM (Strength)
     cron.schedule('0 18 * * *', () => {
         sendMealReminders('6:00 PM');
-    });
+    }, cronOptions);
 
     // Post-Workout - 6:30 PM (HIIT)
     cron.schedule('30 18 * * *', () => {
         sendMealReminders('6:30 PM');
-    });
+    }, cronOptions);
 
     // Post-Yoga - 7:00 PM (Yoga)
     cron.schedule('0 19 * * *', () => {
         sendMealReminders('7:00 PM');
-    });
+    }, cronOptions);
 
     // Dinner - 8:30 PM (All classes)
     cron.schedule('30 20 * * *', () => {
         sendMealReminders('8:30 PM');
-    });
+    }, cronOptions);
 
-    console.log('✅ Meal reminder scheduler initialized successfully!');
+    console.log(`✅ Meal reminder scheduler initialized successfully! (Timezone: ${timezone})`);
     console.log('📅 Scheduled reminders for all meal times');
 };
 
