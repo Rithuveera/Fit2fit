@@ -13,6 +13,10 @@ const DietReminderSubscription = ({ classType }) => {
 
     // Check subscription status on mount
     useEffect(() => {
+        // Reset state when classType changes
+        setIsSubscribed(false);
+        setMessage({ type: '', text: '' });
+
         const savedEmail = localStorage.getItem('userEmail');
         if (savedEmail) {
             setEmail(savedEmail);
