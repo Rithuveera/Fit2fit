@@ -23,7 +23,7 @@ if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
         console.log('   Enter your WhatsApp number when prompted (format: +919677792757)');
 
         // For testing, you can hardcode your number here temporarily
-        const testNumber = 'whatsapp:+919876543210'; // REPLACE WITH YOUR NUMBER
+        const testNumber = 'whatsapp:+919677792757'; // REPLACE WITH YOUR NUMBER
 
         console.log(`   Sending test message to: ${testNumber}`);
 

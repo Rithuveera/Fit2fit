@@ -1,4 +1,5 @@
 import express from 'express';
+import axios from 'axios';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import cors from 'cors';
@@ -552,10 +553,40 @@ app.get(/(.*)/, (req, res) => {
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
+// Health Check Endpoint
+app.get('/api/health', (req, res) => {
+    res.status(200).send('OK');
+});
+
+// Keep-Alive Mechanism
+function startKeepAlive() {
+    // Use the Render external URL if available, otherwise fallback to the hardcoded one
+    const url = process.env.RENDER_EXTERNAL_URL || 'https://fit2fit-gym-api.onrender.com';
+    // Ping every 14 minutes (Render sleeps after 15 mins of inactivity)
+    const interval = 14 * 60 * 1000;
+
+    console.log(`Starting Keep-Alive ping to ${url} every 14 minutes...`);
+
+    const ping = async () => {
+        try {
+            await axios.get(`${url}/api/health`);
+            console.log(`Keep-Alive ping successful: ${new Date().toISOString()}`);
+        } catch (err) {
+            console.error(`Keep-Alive ping failed: ${err.message}`);
+        }
+    };
+
+    // Initial ping
+    ping();
+
+    setInterval(ping, interval);
+}
+
 // Start Server
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log("Starting Fit2Fit Server with PostgreSQL...");
     initDb();
     initializeScheduler();
+    startKeepAlive();
 });

@@ -38,7 +38,7 @@ async function checkAndSendReminders(classType, mealName, mealDetails) {
     try {
         // Fetch active subscribers for this class type
         const result = await db.query(
-            'SELECT * FROM diet_reminders WHERE class_type = $1 AND active = 1',
+            'SELECT * FROM diet_reminders WHERE class_type = $1 AND active = TRUE',
             [classType]
         );
 
