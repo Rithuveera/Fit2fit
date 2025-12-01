@@ -237,11 +237,14 @@ app.post('/api/subscribe-reminders', async (req, res) => {
             [email, name, class_type, phone_number || null, whatsapp_enabled ? true : false, name, phone_number || null, whatsapp_enabled ? true : false]
         );
 
-        // Send confirmations
+        // Send confirmations (WhatsApp only - email disabled)
         try {
-            await sendSubscriptionConfirmation(email, name, class_type);
+            // await sendSubscriptionConfirmation(email, name, class_type);
             if (whatsapp_enabled && phone_number) {
                 await sendSubscriptionConfirmationWhatsApp(phone_number, name, class_type);
+                console.log(`WhatsApp confirmation sent to ${phone_number}`);
+            } else {
+                console.log(`Subscription created for ${email} but WhatsApp not enabled`);
             }
         } catch (msgErr) {
             console.error("Error sending confirmation:", msgErr);
@@ -311,15 +314,15 @@ app.post('/api/test-meal-reminder', async (req, res) => {
 
         const testMeal = testMeals[class_type] || testMeals['HIIT'];
 
-        // Send email reminder
-        const emailResult = await sendMealReminder(
-            subscriber.email,
-            subscriber.name || 'Fitness Enthusiast',
-            testMeal.name,
-            testMeal.meal,
-            testMeal.time,
-            class_type
-        );
+        // Email reminders disabled - WhatsApp only
+        // const emailResult = await sendMealReminder(
+        //     subscriber.email,
+        //     subscriber.name || 'Fitness Enthusiast',
+        //     testMeal.name,
+        //     testMeal.meal,
+        //     testMeal.time,
+        //     class_type
+        // );
 
         // Send WhatsApp reminder if enabled
         let whatsappResult = { success: false, skipped: true };
@@ -335,10 +338,10 @@ app.post('/api/test-meal-reminder', async (req, res) => {
         }
 
         res.json({
-            message: (emailResult.success || whatsappResult.success) ? 'success' : 'partial_failure',
+            message: whatsappResult.success ? 'success' : 'failed',
             data: {
-                email_sent: emailResult.success,
-                email_error: emailResult.error,
+                email_sent: false,
+                email_disabled: true,
                 whatsapp_sent: whatsappResult.success,
                 whatsapp_error: whatsappResult.error,
                 meal: testMeal
@@ -541,6 +544,11 @@ app.delete('/api/analytics/goal/:goalId', async (req, res) => {
     }
 });
 
+// Health Check Endpoint (must be before catch-all route)
+app.get('/api/health', (req, res) => {
+    res.status(200).send('OK');
+});
+
 // Serve static files from the dist directory (Vite build output)
 app.use(express.static(path.join(__dirname, 'dist')));
 
@@ -551,11 +559,6 @@ app.get(/(.*)/, (req, res) => {
         return res.status(404).json({ error: 'API endpoint not found' });
     }
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-});
-
-// Health Check Endpoint
-app.get('/api/health', (req, res) => {
-    res.status(200).send('OK');
 });
 
 // Keep-Alive Mechanism

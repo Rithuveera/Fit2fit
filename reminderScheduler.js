@@ -52,13 +52,13 @@ async function checkAndSendReminders(classType, mealName, mealDetails) {
         console.log(`Found ${subscribers.length} subscribers for ${classType}`);
 
         for (const subscriber of subscribers) {
-            // Send Email
-            try {
-                await sendMealReminder(subscriber.email, subscriber.name, mealName, mealDetails.meal, mealDetails.time, classType);
-                console.log(`Email sent to ${subscriber.email}`);
-            } catch (emailError) {
-                console.error(`Failed to send email to ${subscriber.email}:`, emailError);
-            }
+            // Email reminders disabled - WhatsApp only
+            // try {
+            //     await sendMealReminder(subscriber.email, subscriber.name, mealName, mealDetails.meal, mealDetails.time, classType);
+            //     console.log(`Email sent to ${subscriber.email}`);
+            // } catch (emailError) {
+            //     console.error(`Failed to send email to ${subscriber.email}:`, emailError);
+            // }
 
             // Send WhatsApp (if enabled)
             if (subscriber.whatsapp_enabled && subscriber.phone_number) {
@@ -68,6 +68,8 @@ async function checkAndSendReminders(classType, mealName, mealDetails) {
                 } catch (waError) {
                     console.error(`Failed to send WhatsApp to ${subscriber.phone_number}:`, waError);
                 }
+            } else {
+                console.log(`Skipping ${subscriber.email} - WhatsApp not enabled or no phone number`);
             }
         }
     } catch (err) {
